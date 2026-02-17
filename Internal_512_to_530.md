@@ -652,11 +652,11 @@ Have a record of the resources that you generated.
 mv cluster_scoped_resources.yaml ${VERSION}-${PROJECT_CPD_INST_OPERATORS}-cluster_scoped_resources.yaml
 ```
 
-Return to paretn folder.
+Return to parent folder.
 
 3.Applying your entitlements to monitor and report use against license terms
 
-**Production enironment (Id non-production, please set flag --production=false)**
+**Production environment (Id non-production, please set flag --production=false)**
 
 Apply the IBM Cloud Pak for Data Enterprise Edition for the non-production environment.
 
@@ -716,7 +716,7 @@ cpd-cli manage apply-entitlement \
 --production=true
 ```
 
-Apply the Planning Analytics licens (Only Production license available).
+Apply the Planning Analytics license (Only Production license available).
 
 ```
 cpd-cli manage apply-entitlement \
@@ -790,7 +790,7 @@ ${CPDM_OC_LOGIN}
 
 3.Upgrade the required operators and custom resources for the instance (For non-tethered namespace).
 
-Note, if ether namespace is present please add flag "--tethered_instance_ns=${PROJECT_CPD_INSTANCE_TETHERED_LIST}"
+Note, if either namespace is present please add flag "--tethered_instance_ns=${PROJECT_CPD_INSTANCE_TETHERED_LIST}"
 
 ```bash
 cpd-cli manage install-components \
@@ -833,7 +833,7 @@ podman inspect olm-utils-play-v4 | jq -r '.[0].Mounts' |jq -r '.[] | select(.Des
 
 ```
 
-#### 2.2.2 Upgrade the CCS + WKC + Analytics Engine + Data Privacy service.
+#### 2.2.2 Upgrade the CCS + WKC + Analytics Engine + Data Privacy service
 
 - Log in to the cluster
 
