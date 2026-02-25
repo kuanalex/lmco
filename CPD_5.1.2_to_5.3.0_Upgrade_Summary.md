@@ -1,5 +1,4 @@
 # Cloud Pak for Data Upgrade Summary: 5.1.2 → 5.3.0
-**Author:** Alex Kuan (alex.kuan@ibm.com)
 
 ## Executive Summary
 
