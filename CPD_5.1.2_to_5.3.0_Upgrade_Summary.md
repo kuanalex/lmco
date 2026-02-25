@@ -50,7 +50,7 @@ Successfully completed upgrade of Cloud Pak for Data from version 5.1.2 to 5.3.0
 
 ---
 
-## Critical Issues Encountered
+## Issues Encountered
 
 ### Issue #1: AnalyticsEngine Image Digests Not Auto-Removed
 **GitHub Issue:** [#77755](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77755)
