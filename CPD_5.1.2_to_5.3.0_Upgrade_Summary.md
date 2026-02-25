@@ -456,30 +456,17 @@ Pre-upgrade validation did NOT detect the issues that would later block the upgr
 ## Post-Upgrade Tasks
 
 ### Completed ✅
-- Spark instance upgraded (Instance ID: 1770658860342305)
-- Data Virtualization instance upgraded (Instance ID: 1771879544156740)
-- Canvas operator restarted
+- Service instances upgraded (Spark: 1770658860342305, DV: 1771879544156740)
 - All component CRs reconciled to 5.3.0
+- Canvas Base image paths fixed (flow-ui and flow-api deployments)
+- DV DIAGPATH cleanup completed
+- RStudio image pull issues resolved
 
 ### Pending ⚠️
-- **DMC service instance stuck in UPGRADE_IN_PROGRESS** (Instance ID: 1770680059489170)
+- **DMC service instance** (ID: 1770680059489170) - Stuck in UPGRADE_IN_PROGRESS
   - DMC CR successfully upgraded to 5.3.0
   - Service instance status not updating
-  - Requires investigation and manual recovery procedure
-  
-- **DV DIAGPATH cleanup required**
-  ```bash
-  oc -n zen rsh c-db2u-dv-db2u-0 bash
-  # Follow DV post-upgrade cleanup procedures
-  ```
-
-- **RStudio ImagePullBackOff resolution**
-  - Some RStudio pods still experiencing image pull issues
-  - May require production repository image availability
-
-- **Missing production repository images investigation**
-  - Canvas Base flow-ui and flow-api images
-  - Need to verify image availability and update image references if needed
+  - Requires manual recovery procedure or IBM support investigation
 
 ---
 
