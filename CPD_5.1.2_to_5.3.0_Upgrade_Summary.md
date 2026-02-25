@@ -340,6 +340,8 @@ Multiple undocumented issues: manual Db2aaService upgrade, image digest removal,
 - All component CRs reconciled to 5.3.0
 - Canvas Base image paths fixed (flow-ui and flow-api deployments with malformed paths)
 - DV DIAGPATH cleanup completed
+- Catalog-API migration from CouchDB to PostgreSQL completed successfully
+- IKC migration from Db2 to PostgreSQL completed successfully
 
 ### Pending ⚠️
 - **DMC service instance** (ID: 1770680059489170) - Stuck in UPGRADE_IN_PROGRESS
