@@ -6,9 +6,13 @@
 Successfully completed upgrade of Cloud Pak for Data from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **5 defects** requiring manual intervention.
 
 **Overall Status:** ✅ Completed with manual workarounds
+
 **Total Components Upgraded:** 20+ components including WKC, DataStage, Watson Studio, WML, DMC, and more
+
 **Total Effort:** ~16 man-hours over 2+ business days (Feb 23-25, 2026)
+
 **Command Execution Time:** ~6.5 hours (actual CLI runtime)
+
 **Troubleshooting & Manual Fixes:** ~9.5 hours (defect investigation, workarounds, retries)
 
 ---
