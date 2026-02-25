@@ -3,7 +3,7 @@
 
 ## Executive Summary
 
-Successfully completed upgrade of Cloud Pak for Data from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **5 significant defects** requiring manual intervention.
+Successfully completed upgrade of Cloud Pak for Data from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **5 defects** requiring manual intervention.
 
 **Overall Status:** ✅ Completed with manual workarounds
 **Total Components Upgraded:** 20+ components including WKC, DataStage, Watson Studio, WML, DMC, and more
