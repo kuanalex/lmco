@@ -1,8 +1,8 @@
-# Cloud Pak for Data Upgrade Summary: 5.1.2 → 5.3.0
+# IBM Software Hub Upgrade Summary: 5.1.2 → 5.3.0
 
 ## Executive Summary
 
-Successfully completed upgrade of Cloud Pak for Data from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **5 defects** requiring manual intervention.
+Successfully completed upgrade of IBM Software Hub (formerly Cloud Pak for Data) from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **5 defects** requiring manual intervention.
 
 **Overall Status:** ✅ Completed with manual workarounds
 
