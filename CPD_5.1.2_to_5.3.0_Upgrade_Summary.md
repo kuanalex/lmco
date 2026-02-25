@@ -244,29 +244,40 @@ cpd-cli service-instance upgrade \
 **Affected Pods:** `canvasbase-flow-ui`, `canvasbase-flow-api`, RStudio pods
 
 #### Problem Description
-Production repository images for Canvas Base and RStudio were missing/inaccessible, causing ImagePullBackOff and extending upgrade time.
+Canvas Base deployments had malformed image paths with duplicate `/cp/cpd/` segments, causing ImagePullBackOff. RStudio also experienced image pull issues.
 
-#### Workaround Applied
-```bash
-# Restart Canvas operator pod to retry image pull
-oc delete pod ibm-cpd-canvasbase-operator-d85d5498f-s6x95 -n cpd-operators
-
-# Verify new operator pod is running
-oc get pod -n cpd-operators | grep canvasbase
+**Root Cause:** Canvas Base operator generated deployments with incorrect image paths:
+```
+❌ cp.icr.io/cp/cpd/cp/cpd/flow-api@sha256:...  (duplicate /cp/cpd/)
+❌ cp.icr.io/cp/cpd/cp/cpd/flow-ui@sha256:...   (duplicate /cp/cpd/)
 ```
 
-Some images eventually became available after operator restart, but RStudio ImagePullBackOff issues persisted beyond the upgrade window.
+#### Workaround Applied
+Fixed image paths directly in Canvas Base deployments:
 
-**Impact:** 
-- Extended upgrade time for affected components
-- Some components not fully operational immediately after upgrade
-- Required manual intervention and monitoring
+```bash
+# Edit flow-api deployment
+oc edit deployment canvasbase-flow-api -n zen
+# Changed to: cp.icr.io/cp/cpd/flow-api@sha256:4a46d186f452393404bc825cfcb1bacf6db3e90591a2f35c64c9a92bdf37d399
+
+# Edit flow-ui deployment
+oc edit deployment canvasbase-flow-ui -n zen
+# Changed to: cp.icr.io/cp/cpd/flow-ui@sha256:58564a08699fae5c0d84900713655be7977eae133b722d243d8cbf7a3ddbb867
+```
+
+**Result:** New pods rolled out successfully with correct 5.3.0 images:
+```
+canvasbase-flow-api-df5cb5748-rp89x    1/1   Running   0   8m20s
+canvasbase-flow-ui-56d9fc744c-s4fqg    1/1   Running   0   6m50s
+```
+
+**Impact:** Extended upgrade time, required manual deployment edits
 
 #### Recommendations
-- **Pre-Release Validation:** Ensure all required images are available in production repository before release
-- **Pre-Upgrade Image Check:** Implement pre-upgrade image availability validation
-- **Fallback Mechanisms:** Add fallback mechanisms for missing images
-- **Better Error Messages:** Provide clearer error messages indicating which images are missing and from which repository
+- Fix Canvas Base operator to generate correct image paths without duplicate segments
+- Add pre-upgrade validation to detect malformed image paths
+- Implement automated tests for image path generation
+- Improve error messages to clearly indicate malformed paths vs missing images
 
 ---
 
