@@ -1,4 +1,4 @@
-# Software Hub Upgrade Summary: 5.1.2 → 5.3.0
+# LMCO Internal Cluster Upgrade Summary: 5.1.2 → 5.3.0
 
 ## Executive Summary
 
@@ -7,8 +7,8 @@ Successfully completed upgrade from version 5.1.2 to 5.3.0 on LMCO Internal Clus
 - **Overall Status:** Completed with manual workarounds
 - **Total Components Upgraded:** 20+ components including WKC, DataStage, Watson Studio, WML, DMC, and more
 - **Total Effort:** ~11 hours over 3 business days (Feb 23-25, 2026)
-- **Command Execution Time:** ~6.5 hours (CLI command runtimes)
-- **Troubleshooting & Manual Fixes:** ~4.5 hours (issue investigation, workarounds, retries)
+- **Command Execution Time:** ~6.5 hours (CLI command runtime)
+- **Troubleshooting & Manual Fixes:** ~4.5 hours (issue investigation, workarounds)
 
 ---
 
@@ -74,7 +74,7 @@ oc delete pod spark-hb-nginx-6db69b6c95-mn88f -n zen
 **Impact:** 89m of failed upgrade time
 
 #### Recommendations
-- Implement image digest removal during upgrades
+- Implement automatic image digest removal during upgrades
 
 ---
 
@@ -176,7 +176,7 @@ canvasbase-flow-ui-56d9fc744c-s4fqg    1/1   Running   0   6m50s
 **Impact:** Extended upgrade time, required manual deployment edits
 
 #### Recommendations
-- Fix Canvas Base operator to generate correct image paths
+- Update Canvas Base operator to generate correct image paths
 
 ---
 
@@ -215,7 +215,7 @@ datastage   5.3.0     5.3.0        Completed   100%      15d
 **Impact:** Required manual intervention, undocumented step
 
 #### Recommendations
-- Fix Helm chart to set `deployCR: true` during upgrades
+- Update the Helm chart to set `deployCR: true` during upgrades
 
 ---
 
@@ -246,7 +246,7 @@ cpd-cli service-instance upgrade --service-type=dmc \
 **Status:** ⚠️ Partial - CR upgraded but instance stuck in UPGRADE_IN_PROGRESS
 
 #### Recommendations
-- Fix cpd-cli to set valid scaleConfig (small, medium, or large)
+- Confirm scaleConfig is set to a correctly in dmc CR (small/medium/large)
 
 ---
 
@@ -307,7 +307,7 @@ cpd-cli service-instance upgrade --service-type=dmc \
 - Add dependency-aware operator upgrade sequencing (e.g., Db2aaService before WKC)
 
 **3. Documentation & Knowledge Management**
-- Maintain comprehensive database of known upgrade issues with tested workarounds
+- Maintain comprehensive list of known upgrade issues with tested workarounds
 
 ---
 
