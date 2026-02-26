@@ -1,57 +1,20 @@
-# IBM Software Hub Upgrade Summary: 5.1.2 → 5.3.0
+# Software Hub Upgrade Summary: 5.1.2 → 5.3.0
 
 ## Executive Summary
 
-Successfully completed upgrade of IBM Software Hub (formerly Cloud Pak for Data) from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **5 defects** requiring manual intervention.
+Successfully completed upgrade from version 5.1.2 to 5.3.0 on LMCO Internal Cluster. The upgrade encountered **6 issues** requiring manual intervention.
 
-**Overall Status:** ✅ Completed with manual workarounds
-
-**Total Components Upgraded:** 20+ components including WKC, DataStage, Watson Studio, WML, DMC, and more
-
-**Total Effort:** ~16 man-hours over 2+ business days (Feb 23-25, 2026)
-
-**Command Execution Time:** ~6.5 hours (actual CLI runtime)
-
-**Troubleshooting & Manual Fixes:** ~9.5 hours (defect investigation, workarounds, retries)
-
----
-
-## Environment Details
-
-**Cluster Information:**
-- **OCP Cluster:** hukfusion.cp.fyre.ibm.com
-- **OCP Console:** https://api.hukfusion.cp.fyre.ibm.com:6443
-- **OpenShift Version:** 4.17.47
-- **Kubernetes Version:** v1.30.14
-- **Platform:** x86_64 (amd64)
-
-**CPD Tools:**
-- **CPD CLI Version:** 14.3.0 (Build 2819)
-- **CPD CLI Build Date:** 2025-12-10T14:05:48
-- **SWH Release Version:** 5.3.0
-- **Helm Version:** v4.1.1
-- **OC Client Version:** 4.18.28
-
-**Storage Classes:**
-- **Block Storage:** `ontap-nas`
-- **File Storage:** `ontap-nas`
-
-**Namespaces:**
-- **Operators:** `cpd-operators`
-- **Operands:** `zen`
-- **Cert Manager:** `ibm-cert-manager`
-- **Licensing:** `ibm-licensing`
-- **Scheduler:** `cpd-scheduler`
-
-**Image Registry:**
-- **Pull Prefix:** `icr.io`
-- **Pull Secret:** `ibm-entitled-regcred`
+- **Overall Status:** Completed with manual workarounds
+- **Total Components Upgraded:** 20+ components including WKC, DataStage, Watson Studio, WML, DMC, and more
+- **Total Effort:** ~11 hours over 3 business days (Feb 23-25, 2026)
+- **Command Execution Time:** ~6.5 hours (CLI command runtimes)
+- **Troubleshooting & Manual Fixes:** ~4.5 hours (issue investigation, workarounds, retries)
 
 ---
 
 ## Upgrade Timeline & Duration
 
-### Day 1 - February 23, 2026 (~3 hours)
+### Day 1 - February 23, 2026 (~2 hours)
 
 | Phase | Duration | Status | Notes |
 |-------|----------|--------|-------|
@@ -61,12 +24,12 @@ Successfully completed upgrade of IBM Software Hub (formerly Cloud Pak for Data)
 | **CASE Package Download** | 5m | ✅ Complete | All component case bundles |
 | **Platform Operators Install** | 85m 8s | ✅ Complete | Initial platform and operators |
 
-### Day 2 - February 24, 2026 (~10 hours)
+### Day 2 - February 24, 2026 (~6 hours)
 
 | Phase | Duration | Status | Issues |
 |-------|----------|--------|--------|
 | **WKC/DP/Mantaflow Attempt 1** | 89m 40s | ❌ Failed | AE, Db2aaService, Policy issues |
-| **Issue Investigation & Fixes** | ~2 hours | ⚠️ Manual | Image digest removal, operator upgrade |
+| **Issue Investigation & Fixes** | ~1 hours | ⚠️ Manual | Image digest removal, operator upgrade |
 | **Db2aaService Operator Upgrade** | 11m 52s | ✅ Complete | Manual workaround required |
 | **WKC/DP/Mantaflow Retry** | 121m 40s | ✅ Complete | After all fixes applied |
 | **DP Standalone** | 18m 35s | ✅ Complete | Clean upgrade |
@@ -77,9 +40,9 @@ Successfully completed upgrade of IBM Software Hub (formerly Cloud Pak for Data)
 
 | Phase | Duration | Status | Notes |
 |-------|----------|--------|-------|
-| **Service Instance Upgrades** | 31s each | ✅ Complete | Spark, DV instances |
-| **DMC Instance Investigation** | ~2 hours | ⚠️ Ongoing | Instance stuck in UPGRADE_IN_PROGRESS |
-| **Documentation & Reporting** | ~1 hour | ✅ Complete | Defect logging, summary creation |
+| **Service Instance Upgrades** | ~70 min | ✅ Complete | Spark (31s), DV (70 min) |
+| **DMC Instance Investigation** | ~1 hours | ⚠️ Ongoing | Instance stuck in UPGRADE_IN_PROGRESS |
+| **Documentation & Reporting** | ~1 hour | ✅ Complete | Issue logging, summary creation |
 
 ---
 
@@ -95,24 +58,23 @@ Successfully completed upgrade of IBM Software Hub (formerly Cloud Pak for Data)
 **Status:** CrashLoopBackOff (16 restarts over 64 minutes)
 
 #### Problem Description
-AnalyticsEngine CR upgrade failed despite `auto_hotfix_removal: true`. The `image_digests` section with 5.1.2 digests remained, causing spark-hb-nginx pod to crash (16 restarts over 64 minutes).
+AnalyticsEngine CR upgrade failed with pinned 5.1.2 image digests remaining, causing spark-hb-nginx pod to crash (16 restarts over 64 minutes).
 
 #### Root Cause
-The operator's `auto_hotfix_removal` logic failed to remove pinned image digests during upgrade. The 5.1.2 images are incompatible with 5.3.0 infrastructure.
+The `auto_hotfix_removal` feature is not supported by the AnalyticsEngine operator. Despite documentation suggesting this feature exists, the Spark team confirmed it was never implemented. Pinned 5.1.2 image digests remained after upgrade, causing incompatibility with 5.3.0 infrastructure.
 
 #### Workaround Applied
 ```bash
 oc patch ae analyticsengine-sample -n zen --type=json \
   --patch '[{"op":"remove","path":"/spec/image_digests"}]'
+
 oc delete pod spark-hb-nginx-6db69b6c95-mn88f -n zen
 ```
 
 **Impact:** 89m of failed upgrade time
 
 #### Recommendations
-- Fix operator's `auto_hotfix_removal` logic to remove image_digests during upgrades
-- Add pre-upgrade validation for pinned image digests
-- Verify similar issues in other CRs (Policy, UG, IIS)
+- Implement image digest removal during upgrades
 
 ---
 
@@ -126,14 +88,15 @@ oc delete pod spark-hb-nginx-6db69b6c95-mn88f -n zen
 **Migration Job:** Repeatedly crashing (ExitCode=1)
 
 #### Problem Description
-WKC upgrade updated Db2aaserviceService CR to 5.3.0, but the operator only supported 5.1.2/5.1.0, creating a version mismatch that blocked WKC at 50% progress.
+WKC upgrade updated Db2aaserviceService CR to 5.3.0, but the operator only supported 5.1.2/5.1.0, blocking WKC at 50% progress.
 
 #### Root Cause
-WKC upgrade creates a chicken-and-egg problem: it updates the CR to 5.3.0 before ensuring the operator supports that version, creating a deadlock where WKC waits for Db2aaservice, but the operator can't reconcile the unsupported version.
+The Db2aaservice operator was not upgraded before the WKC upgrade attempted to update the Db2aaserviceService CR to version 5.3.0. The operator only supported versions 5.1.2 and 5.1.0, causing a version mismatch that blocked WKC upgrade progress.
 
 #### Workaround Applied
 ```bash
 cpd-cli manage case-download --components=db2aaservice --release=5.3.0
+
 cpd-cli manage install-components --components=db2aaservice --release=5.3.0 \
   --operator_ns=cpd-operators --instance_ns=zen --upgrade=true
 ```
@@ -142,9 +105,6 @@ cpd-cli manage install-components --components=db2aaservice --release=5.3.0 \
 
 #### Recommendations
 - Implement automatic dependent operator upgrades before updating CR versions
-- Add pre-upgrade validation for operator version compatibility
-- Update WKC to check `supportedOperandVersions` before updating CRs
-- Document manual workaround until automatic upgrade implemented
 
 ---
 
@@ -158,16 +118,18 @@ cpd-cli manage install-components --components=db2aaservice --release=5.3.0 \
 **Status:** Running but failing readiness/liveness probes (6 restarts over 139 minutes)
 
 #### Problem Description
-Policy CR's `wdp_policy_service_image` with pinned 5.1.2 digest was not auto-removed. The 5.1.2 image has a username construction bug (`user=ikcadminuser=ikcadmin`) and is incompatible with 5.3.0 PostgreSQL, causing authentication failures (6 restarts over 139 minutes).
+Policy CR's `wdp_policy_service_image` with pinned 5.1.2 digest was not auto-removed, causing the pod to fail readiness/liveness probes (6 restarts over 139 minutes).
 
 #### Root Cause
-Multi-layered: (1) Image digest not auto-removed, (2) 5.1.2 image has username construction bug, (3) 5.3.0 PostgreSQL incompatible with old image, (4) Operator won't update deployment while digest is pinned.
+The pinned 5.1.2 image digest was not automatically removed during upgrade, preventing the operator from updating to the compatible 5.3.0 image.
 
 #### Workaround Applied
 ```bash
 oc patch policy policy-cr -n zen --type=json \
   --patch '[{"op":"remove","path":"/spec/wdp_policy_service_image"}]'
+
 oc delete pod wdp-policy-service-5f9d4fd7bf-7q779 -n zen
+
 oc delete pod -n cpd-operators -l name=ibm-cpd-wkc-operator
 ```
 
@@ -175,64 +137,22 @@ oc delete pod -n cpd-operators -l name=ibm-cpd-wkc-operator
 
 #### Recommendations
 - Implement automatic image digest removal during upgrades
-- Add pre-upgrade validation for pinned image digests
-- Ensure operator reconciles properly when digest removed
-- Verify similar issues in other WKC sub-components
 
 ---
 
-### Issue #4: DMC Service Instance Does Not Auto-Upgrade
-**GitHub Issue:** [#77772](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77772)
+### Issue #4: Canvas Base Malformed Image Paths
+**GitHub Issue:** [#77783](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77783)
 
-**Severity:** 🟡 High - Service instance stuck, contradicts documentation
-
-**Component:** Data Management Console (DMC)  
-**Service Instance ID:** 1770680059489170  
-**DMC Operator Version:** 5.10.0-101
-
-#### Problem Description
-DMC service instance did not auto-upgrade despite documentation. Manual upgrade via `cpd-cli service-instance upgrade` got stuck in `UPGRADE_IN_PROGRESS` indefinitely, even after DMC CR successfully upgraded to 5.3.0.
-
-**Key Issues:**
-1. **No Auto-Upgrade:** Service instance remained at 5.1.2 after operator/CR upgraded
-2. **scaleConfig Bug:** cpd-cli set `scaleConfig: <no value>` (literal string) instead of valid value
-3. **Stuck Status:** After CR completed (5.3.0, status: Completed), service instance remained stuck with no upgrade activity
-
-#### Root Cause
-Three issues: (1) cpd-cli bug sets invalid `scaleConfig: <no value>`, (2) Disconnect between CR reconciliation (successful) and service instance tracking (stuck), (3) No auto-upgrade despite documentation.
-
-#### Workaround Applied
-```bash
-oc patch dmc data-management-console -n zen --type=merge \
-  -p '{"spec":{"scaleConfig":"default"}}'
-cpd-cli service-instance upgrade --service-type=dmc \
-  --instance-name=data-management-console --profile=cpadmin
-```
-
-**Status:** ⚠️ Partial - CR upgraded but instance stuck in UPGRADE_IN_PROGRESS
-
-#### Recommendations
-- Fix cpd-cli to set valid default scaleConfig
-- Investigate service instance upgrade job creation and tracking
-- Implement auto-upgrade as documented
-- Provide manual recovery procedure for stuck upgrades
-
----
-
-### Issue #5: Canvas Base Malformed Image Paths
 **Severity:** 🟡 Medium - Caused ImagePullBackOff for multiple pods
 
-**Component:** Canvas Base, RStudio  
-**Affected Pods:** `canvasbase-flow-ui`, `canvasbase-flow-api`, RStudio pods
+**Component:** Canvas Base (SPSS Modeler dependency)
+**Affected Pods:** `canvasbase-flow-ui`, `canvasbase-flow-api`
 
 #### Problem Description
-Canvas Base deployments had malformed image paths with duplicate `/cp/cpd/` segments, causing ImagePullBackOff. RStudio also experienced image pull issues.
+Canvas Base deployments had malformed image paths with duplicate `/cp/cpd/` segments, causing ImagePullBackOff.
 
-**Root Cause:** Canvas Base operator generated deployments with incorrect image paths:
-```
-❌ cp.icr.io/cp/cpd/cp/cpd/flow-api@sha256:...  (duplicate /cp/cpd/)
-❌ cp.icr.io/cp/cpd/cp/cpd/flow-ui@sha256:...   (duplicate /cp/cpd/)
-```
+#### Root Cause
+Canvas Base operator generated deployments with incorrect image paths containing duplicate `/cp/cpd/` segments.
 
 #### Workaround Applied
 Fixed image paths directly in Canvas Base deployments:
@@ -256,40 +176,77 @@ canvasbase-flow-ui-56d9fc744c-s4fqg    1/1   Running   0   6m50s
 **Impact:** Extended upgrade time, required manual deployment edits
 
 #### Recommendations
-- Fix Canvas Base operator to generate correct image paths without duplicate segments
-- Add pre-upgrade validation to detect malformed image paths
-- Implement automated tests for image path generation
-- Improve error messages to clearly indicate malformed paths vs missing images
+- Fix Canvas Base operator to generate correct image paths
 
 ---
 
-## Common Patterns & Root Causes
+### Issue #5: DataStage CR Does Not Auto-Upgrade
+**Severity:** 🟡 Medium - Required manual CR patch to trigger upgrade
 
-### Pattern #1: Image Digest Pinning Issues
-**Affected:** AnalyticsEngine, Policy CR, DMC
+**Component:** DataStage Enterprise  
+**Operator Version:** 5.3.0  
+**CR Status:** Stuck at 5.1.2 despite operator upgrade
 
-Three issues involved pinned 5.1.2 image digests not auto-removed during upgrade, blocking at 50-85% progress. Root cause: operators lack proper upgrade reconciliation logic and no pre-upgrade validation exists.
+#### Problem Description
+DataStage CR did not automatically upgrade from 5.1.2 to 5.3.0 after the DataStage operator was upgraded.
 
-**Solution:** Implement pre-upgrade validation to detect/remove pinned digests; update all operators to handle digest removal during upgrades.
+#### Root Cause
+Helm chart configuration `datastageEnt.deployCR: false` prevented automatic CR upgrade.
 
-### Pattern #2: Operator Upgrade Sequencing
-**Affected:** Db2aaService
+#### Workaround Applied
+Manually patched the DataStage CR to trigger upgrade:
 
-WKC updates dependent CR versions before ensuring operators support them, creating deadlock. Expected: auto-upgrade dependent operators first, then update CRs.
+```bash
+# Verify operator is at 5.3.0
+# image: icr.io/cpopen/ds-operator@sha256:3f5b4574ced1b24436efae4f7325230d43640bc67c5a52db3a550cf3a0aa1640
+# productVersion: 5.3.0
 
-**Solution:** Implement dependency-aware operator upgrade sequencing; add pre-upgrade validation for operator compatibility.
+# Manually trigger CR upgrade via patch
+oc patch datastage datastage -n zen --type=merge --patch '{"spec":{"version":"5.3.0"}}'
+```
 
-### Pattern #3: Service Instance Upgrade Disconnect
-**Affected:** DMC
+**Result:** DataStage CR successfully upgraded to 5.3.0 after manual patch (completed in ~13 minutes)
 
-Service instances don't auto-upgrade (contradicts docs); manual upgrade gets stuck. Disconnect between CR reconciliation (successful) and instance tracking (stuck).
+```
+NAME        VERSION   RECONCILED   STATUS      PERCENT   AGE
+datastage   5.3.0     5.3.0        Completed   100%      15d
+```
 
-**Solution:** Implement auto-upgrade as documented; fix job creation/tracking; add timeout/retry logic.
+**Impact:** Required manual intervention, undocumented step
 
-### Pattern #4: Documentation Gaps
-Multiple undocumented issues: manual Db2aaService upgrade, image digest removal, service instance behavior, cpd-cli bugs, malformed image paths.
+#### Recommendations
+- Fix Helm chart to set `deployCR: true` during upgrades
 
-**Solution:** Update docs with pre-upgrade checklist, troubleshooting guide, known issues/workarounds.
+---
+
+### Issue #6: DMC Service Instance Does Not Auto-Upgrade
+**GitHub Issue:** [#77772](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77772)
+
+**Severity:** 🟡 High - Service instance stuck, contradicts documentation
+
+**Component:** Data Management Console (DMC)
+**Service Instance ID:** 1770680059489170
+**DMC Operator Version:** 5.10.0-101
+
+#### Problem Description
+DMC service instance did not auto-upgrade despite documentation. Manual upgrade via `cpd-cli service-instance upgrade` got stuck in `UPGRADE_IN_PROGRESS` indefinitely.
+
+#### Root Cause
+The cpd-cli tool set an invalid `scaleConfig: <no value>` value, and service instance tracking became disconnected from CR reconciliation status.
+
+#### Workaround Applied
+```bash
+oc patch dmc data-management-console -n zen --type=merge \
+  -p '{"spec":{"scaleConfig":"small"}}'
+
+cpd-cli service-instance upgrade --service-type=dmc \
+  --instance-name=data-management-console --profile=cpadmin
+```
+
+**Status:** ⚠️ Partial - CR upgraded but instance stuck in UPGRADE_IN_PROGRESS
+
+#### Recommendations
+- Fix cpd-cli to set valid scaleConfig (small, medium, or large)
 
 ---
 
@@ -322,54 +279,39 @@ Multiple undocumented issues: manual Db2aaService upgrade, image digest removal,
 
 ### Service Instance Upgrades
 
-| Instance Type | Count | Duration | Status | Notes |
-|---------------|-------|----------|--------|-------|
-| Spark | 1 | 31s | ✅ Complete | Instance ID: 1770658860342305 |
-| Data Virtualization | 1 | 31s | ✅ Complete | Instance ID: 1771879544156740 |
-| DB2 OLTP | 0 | N/A | Skipped | No instances to upgrade |
-| DB2 Warehouse | 0 | N/A | Skipped | No instances to upgrade |
-| Cognos Analytics | 0 | 1s | No instances | No instances found |
-| DMC | 1 | N/A | ⚠️ Stuck | Instance ID: 1770680059489170, stuck in UPGRADE_IN_PROGRESS |
+| Instance Type | Count | Command Duration | Actual Duration | Status | Notes |
+|---------------|-------|------------------|-----------------|--------|-------|
+| Spark | 1 | 31s | ~31s | ✅ Complete | Instance ID: 1770658860342305 |
+| Data Virtualization | 1 | 31s | ~70 min | ✅ Complete | Instance ID: 1771879544156740, migration job took ~1 hour |
+| DB2 OLTP | 0 | N/A | N/A | Skipped | No instances to upgrade |
+| DB2 Warehouse | 0 | N/A | N/A | Skipped | No instances to upgrade |
+| Cognos Analytics | 0 | 1s | 1s | No instances | No instances found |
+| DMC | 1 | N/A | N/A | ⚠️ Stuck | Instance ID: 1770680059489170, stuck in UPGRADE_IN_PROGRESS |
 
 ---
 
-## Post-Upgrade Tasks
+## Post-Upgrade Migrations
 
-### Completed ✅
-- Service instances upgraded (Spark: 1770658860342305, DV: 1771879544156740)
-- All component CRs reconciled to 5.3.0
-- Canvas Base image paths fixed (flow-ui and flow-api deployments with malformed paths)
-- DV DIAGPATH cleanup completed
 - Catalog-API migration from CouchDB to PostgreSQL completed successfully
 - IKC migration from Db2 to PostgreSQL completed successfully
 
-### Pending ⚠️
-- **DMC service instance** (ID: 1770680059489170) - Stuck in UPGRADE_IN_PROGRESS
-  - DMC CR successfully upgraded to 5.3.0
-  - Service instance status not updating
-  - Requires manual recovery procedure or IBM support investigation
+---
+
+### Recommendations for Future Upgrades 🎯
+
+**1. Pre-Upgrade Validation**
+- Check for pinned image digests, operator version compatibility
+
+**2. Automation Improvements**
+- Implement automated removal of pinned image digests during upgrade process
+- Add dependency-aware operator upgrade sequencing (e.g., Db2aaService before WKC)
+
+**3. Documentation & Knowledge Management**
+- Maintain comprehensive database of known upgrade issues with tested workarounds
 
 ---
 
-## Recommendations for Future Upgrades
-
-### Immediate (High Priority)
-1. **Pre-Upgrade Validation:** Detect pinned digests, operator compatibility, service instance eligibility, image availability
-2. **Operator Automation:** Auto-upgrade dependent operators before updating CRs; add dependency sequencing
-3. **Documentation:** Add troubleshooting guide, known issues, pre-upgrade checklist
-
-### Long-Term (Medium Priority)
-4. **Auto Hotfix Removal:** Fix operators to remove digests; standardize across all components; add automated tests
-5. **Service Instance Upgrade:** Fix tracking; implement auto-upgrade; add timeout/retry logic
-6. **Image Management:** Ensure availability before release; add validation; improve error messages
-
-### Testing (Ongoing)
-7. **Automated Tests:** Test digest removal, version compatibility, service instance workflows across upgrade paths
-8. **Cross-Component:** Verify similar issues don't exist in other CRs (UG, IIS, Glossary, Db2, MongoDB)
-
----
-
-## Defect Tracking
+## Issue Tracking
 
 | Issue | GitHub | Priority | Status | Impact |
 |-------|--------|----------|--------|--------|
@@ -377,14 +319,5 @@ Multiple undocumented issues: manual Db2aaService upgrade, image digest removal,
 | Db2aaService Operator | [#77756](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77756) | Critical | Open | All WKC upgrades with Db2aaService |
 | Policy CR Image Digest | [#77757](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77757) | Critical | Open | All 5.1.2 upgrades with Policy hotfixes |
 | DMC Service Instance | [#77772](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77772) | High | Open | All DMC service instances |
-| Canvas Base Image Paths | TBD | Medium | Resolved | Canvas Base deployments |
-
----
-
-## Lessons Learned
-
-**What Went Well ✅**
-- Pre-upgrade prep and environment setup smooth
-- Shared components and scheduler upgraded cleanly
-- Most components upgraded successfully after initial fixes
-- Service instance upgrades completed quickly
+| Canvas Base Image Paths | [#77783](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/77783) | Medium | Resolved | Canvas Base deployments |
+| DataStage CR Auto-Upgrade | TBD | Medium | Resolved | DataStage CR upgrades |
