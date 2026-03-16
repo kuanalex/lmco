@@ -13,7 +13,7 @@ Successfully completed upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Clus
 
 ## Upgrade Timeline & Duration
 
-#### Day 1 - March 13, 2026 (8.5 hours)
+### Day 1 - March 13, 2026 (8.5 hours)
 
 | Phase | Duration | Notes |
 |-------|----------|-------|
