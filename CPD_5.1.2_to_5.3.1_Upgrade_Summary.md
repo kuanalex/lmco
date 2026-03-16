@@ -60,13 +60,6 @@ Multiple component upgrades failed due to pinned 5.1.2 image digests not being a
 
 3. **Watson Studio (WS) and Watson Machine Learning (WML)**: Both CRs had pinned image digests that blocked upgrade completion.
 
-**Error Message (WKC):**
-```
-The task includes an option with an undefined variable. No variable found with this name: wdp_profiling_messaging_image
-
-The error appears to be in '/opt/ansible/5.3.1/roles/wkc-core/roles/common/tasks/hot_fix.yaml': line 25, column 5
-```
-
 **Workaround:**
 ```bash
 # Remove image_digests from all WKC-related CRs
