@@ -107,7 +107,7 @@ oc patch wmlbase wml-cr -n zen --type=json -p='[{"op":"remove","path":"/spec/ima
 **Recommendation:** Remove all image_digests and pinned images from WKC (and sub-CRs), DV, WS, and WML CRs before initiating the upgrade to avoid reconciliation failures.
 
 ### Issue #3: DMC Service Instance Does Not Auto-Upgrade
-**Severity:** High | **Component:** DMC
+**Severity:** Medium | **Component:** DMC
 
 DMC service instance remained stuck after CR upgrade due to invalid scaleConfig and zen-watcher sync issues.
 
