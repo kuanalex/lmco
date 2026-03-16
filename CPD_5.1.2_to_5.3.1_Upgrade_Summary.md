@@ -47,7 +47,7 @@ During platform upgrade, the ZenService CR failed to automatically upgrade to ve
 oc patch zenservice lite-cr -n zen --type=merge \
   --patch '{"spec":{"version":"6.4.0","zen_pak_version":"6.4.0"}}'
 ```
-**Impact:** 86m platform install failure + 44m manual reconciliation. **Recommendation:** Verify ZenService CR version and manually patch ZenService CR version during platform upgrade if required.
+**Impact:** 86m platform install failure + 2h investigation and manual patching. **Recommendation:** Verify ZenService CR version and manually patch ZenService CR version during platform upgrade if required.
 
 ### Issue #2: Image Digests Not Auto-Removed Across Multiple Components
 **Severity:** High | **Components:** WKC (and 8 sub-CRs), Data Virtualization, Watson Studio, Watson Machine Learning
