@@ -20,9 +20,9 @@ Successfully completed upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Clus
 | **Pre-upgrade Setup** | 1h 20m | Client workstation, environment variables, pre-checks, licensing, scheduler, entitlements, cluster scoped resources |
 | **Platform Operators Install** | 86m 40s | ZenService does not auto-upgrade |
 | **ZenService Investigation and Manual Patch** | 2h | Investigate ZenService failure and manually patched version to 6.4.0 |
-| **Image Digest Removal** | 2h 10m | Removed digests from CCS, AE, WKC, Policy, and 8 WKC sub-CRs |
+| **Image Digest Removal** | 2h 10m | Removed digests from CCS, AE, WKC, Policy |
 | **Db2aaService Operator Upgrade** | 2m 8s | Manual workaround required |
-| **WKC/DP/Mantaflow** | 60m | Failed initially, completed after image digest fixes |
+| **WKC/DP/Mantaflow** | 60m | Failed initially, completed after additional image digest fixes in WKC sub-CRs  |
 
 ### Day 2 - March 16, 2026 (4.5 hours)
 
