@@ -155,4 +155,4 @@ After completing the DV CR upgrade, the DV service instance shows upgrade option
 
 **Status:** Development team engaged for resolution.
 
-**Impact:** Service instance not fully upgraded despite CR completion. **Recommendation:** Monitor for next actions from Ddata Virtualization development team.
+**Impact:** Service instance not fully upgraded despite CR completion. **Recommendation:** Monitor for next actions from Data Virtualization development team.
