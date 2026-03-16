@@ -15,34 +15,25 @@ Successfully completed upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Clus
 
 #### Day 1 - March 13, 2026 (Approximately 8.5 hours: 9:30 AM - 6:00 PM EST)
 
-| Phase | Start Time | Duration | Status | Notes |
-|-------|------------|----------|--------|-------|
-| **Pre-upgrade Setup** | 9:30 AM | Approximately 1h 20m | Complete | Client workstation, environment variables, pre-checks, licensing, scheduler, entitlements, cluster scoped resources |
-| **Shared Cluster Components** | 10:50 AM | 3m 6s | Complete | Clean upgrade |
-| **Scheduler Upgrade** | - | 2m 49s | Complete | Clean upgrade |
-| **Apply Entitlement** | - | 5m 30s | Complete | License entitlement applied |
-| **Platform Operators Install** | 10:50 AM | 86m 40s | Failed | ZenService blocked by Tekton/Pipelines issue; monitoring until 12:14 PM |
-| **Issue Investigation & Meetings** | 12:14 PM | 1h 28m | - | First meeting (26m 53s) + investigation + second meeting (1m 49s) |
-| **ZenService Manual Patch** | 12:42 PM | 44m | Complete | Manually patched version to 6.4.0; reconciliation completed by 1:26 PM |
-| **Image Digest Removal (Pre-emptive)** | Afternoon | Approximately 10 min | Complete | Removed digests from CCS, AE, WKC, Policy CRs |
-| **Db2aaService Operator Upgrade** | Afternoon | 2m 8s | Complete | Manual workaround required (same as 5.3.0) |
-| **WKC/DP/Mantaflow Attempt 1** | Afternoon | 28m 50s | Failed | WKC sub-CRs blocked by image_digests issue |
-| **WKC Sub-CR Image Digest Removal** | Late Afternoon | Approximately 2 hours | Manual | Removed digests from 8 WKC sub-CRs + pinned images |
-| **WKC/DP/Mantaflow Completion** | Over weekend | - | Complete | WKC completed after all sub-CR fixes |
+| Phase | Duration | Status | Notes |
+|-------|----------|--------|-------|
+| **Pre-upgrade Setup** | Approximately 1h 20m | Complete | Client workstation, environment variables, pre-checks, licensing, scheduler, entitlements, cluster scoped resources |
+| **Platform Operators Install** | 86m 40s | Failed | ZenService blocked by Tekton/Pipelines issue |
+| **Issue Investigation & Meetings** | 1h 28m | - | Team meetings and investigation |
+| **ZenService Manual Patch** | 44m | Complete | Manually patched version to 6.4.0 |
+| **Image Digest Removal** | Approximately 2h 10m | Manual | Removed digests from CCS, AE, WKC, Policy, and 8 WKC sub-CRs |
+| **Db2aaService Operator Upgrade** | 2m 8s | Complete | Manual workaround required |
+| **WKC/DP/Mantaflow** | 28m 50s + weekend | Complete | Failed initially, completed after image digest fixes |
 
 ### Day 2 - March 16, 2026 (Approximately 4.5 hours)
 
 | Phase | Duration | Status | Notes |
 |-------|----------|--------|-------|
-| **DP/Mantaflow Standalone** | 15m 45s | Complete | Clean upgrade after WKC completion |
 | **DMC/DB2WH/DV** | 21m 49s | Failed | DV failed due to image_digests |
-| **DV Image Digest Removal** | Approximately 20 min | Complete | Patched DV CR and restarted operator |
-| **WS/WS_Runtimes/WML/Pipelines** | 38m 40s | Failed | WS and WML had image_digests |
-| **WS/WML Image Digest Removal** | Approximately 10 min | Complete | Patched both CRs |
+| **Image Digest Removal (DV/WS/WML)** | Approximately 30 min | Complete | Patched DV, WS, and WML CRs |
 | **WML Completion** | Approximately 40 min | Complete | WML reconciled after patch |
-| **RStudio/SPSS/CA/PA** | 20m | Complete | Clean upgrade (RStudio not installed) |
 | **Service Instance Fixes** | Approximately 1 hour | Partial | DMC instance fixed; DV instance remains in progress |
-| **Post-Upgrade Migrations** | Approximately 30 min | Complete | CCS and IKC migrations successful |
+| **Post-Upgrade Migrations** | Approximately 30 min | Complete | CCS and IKC migrations |
 
 ## Issues Encountered
 
