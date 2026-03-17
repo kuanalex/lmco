@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is substantially complete with 19 of 20 components successfully upgraded. The upgrade encountered **3 issues** requiring manual intervention during the process, with **2 defects** blocking full completion.
+Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is mostly complete with 19 of 20 components successfully upgraded. The upgrade encountered **3 issues** requiring manual intervention during the process, with **2 defects** blocking full completion.
 
 - **Overall status:** 19 of 20 components upgraded - 2 defects under investigation
 - **Total components upgraded:** 19 of 20 components (95%) - cpd_platform, scheduler, db2aaservice, db2oltp, db2wh, dv, dmc, wkc, dp, mantaflow, datastage_ent, datastage_ent_plus, ws, ws_runtimes, wml, analyticsengine, cognos_analytics, planning_analytics, spss, rstudio
