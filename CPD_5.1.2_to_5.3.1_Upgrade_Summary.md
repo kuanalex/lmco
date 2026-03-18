@@ -2,14 +2,13 @@
 
 ## Executive Summary
 
-Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is complete with 20 of 20 components successfully upgraded. The upgrade encountered **3 issues** requiring manual intervention during the process, with **2 items** blocking full completion.
+Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is **fully complete** with 20 of 20 components successfully upgraded. The upgrade encountered **5 issues** requiring manual intervention during the process, all of which have been resolved.
 
-- **Overall status:** 19 of 20 components upgraded - 2 items under investigation
-- **Total components upgraded:** 19 of 20 components (95%) - cpd_platform, scheduler, db2aaservice, db2oltp, db2wh, dv, dmc, wkc, dp, mantaflow, datastage_ent, datastage_ent_plus, ws, ws_runtimes, wml, analyticsengine, cognos_analytics, planning_analytics, spss, rstudio
+- **Overall status:** ✅ 20 of 20 components upgraded successfully (100%)
+- **Total components upgraded:** 20 of 20 components - cpd_platform, scheduler, db2aaservice, db2oltp, db2wh, dv, dmc, wkc, dp, mantaflow, datastage_ent, datastage_ent_plus, ws, ws_runtimes, wml, analyticsengine, cognos_analytics, planning_analytics, spss, rstudio
 - **Total effort:** 13 hours over 2 business days (March 13 & 16, 2026)
   - **Day 1 (March 13):** 8.5 hours
   - **Day 2 (March 16):** 4.5 hours
-- **Pending items:** 2 items under investigation with development teams (WSPipelines CR stuck at 55%, DV service instance not upgrading)
 
 ## Upgrade Timeline & Duration
 
@@ -54,20 +53,56 @@ Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is complete with 20
 
 ---
 
-### Outstanding Issues
+### Previously Outstanding Issues
 
 #### WSPipelines Blocked by Tekton Controller Crash
 **Component:** WSPipelines | **GitHub:** [#80026](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/80026)
 
 `tekton-extensions-controller` crashes attempting to disable locked `APIPriorityAndFairness` feature gate. WSPipelines CR stuck at 5.1.2 (55% progress).
 
-**Status:** Resolved by updating the tekton-controller deployment image to a working image. Upgrade of WSPipelines completes without any issues afterward. 
+**Status:** ✅ **RESOLVED**
+
+**Root Cause:** Image mismatch in tekton-extensions-controller deployment. The failing pod was referencing a different image than the working pods:
+- **Failing pod** (`tekton-extensions-controller-575745f88d-2n9n4`): `cp.icr.io/cp/cpd/tekton-extensions-controller@sha256:fe58dfa174c818dc9f39964dd7b23feeb98bc1fa91f33937c2e3dbac37a18c20`
+- **Working pods** (`tekton-extensions-controller-5c7449f45c-2k7tc`): `cp.icr.io/cp/cpd/tekton-extensions-controller@sha256:e440311016dc322342c8919f462e8051a9ce639117ab259604f3efa447946704`
+
+**Resolution:** Updated the tekton deployment to reference the working image (`sha256:e440311016dc322342c8919f462e8051a9ce639117ab259604f3efa447946704`). After the update:
+- Tekton controller pod issue resolved
+- WSPipelines completed reconcile at 5.1.2
+- Successfully proceeded with 5.3.1 upgrade
+
+**Verification:**
+```
+oc get wspipelines
+NAME             VERSION   RECONCILED   STATUS      PERCENT   AGE
+wspipelines-cr   5.3.1     5.3.1        Completed   100%      5d16h
+```
 
 ---
 
 #### DV Service Instance Upgrade Incomplete
-**Component:** Data Virtualization **GitHub:** [#80486](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/80486)
+**Component:** Data Virtualization | **GitHub:** [#80486](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/80486)
 
 DV service instance remains at 3.1.2 despite successful CR upgrade to 3.3.1. Upgrade option visible but not executing.
 
-**Status:** DV development team assisted with the blocked instance upgrade.
+**Status:** ✅ **RESOLVED**
+
+**Root Cause:** Timing issue during upgrade process where DV head pod creation was delayed 2.5 hours after DV hurricane pod started:
+- **03/16, 16:49:02 UTC** - Upgrade triggered
+- **03/16, 17:01:31 UTC** - Hurricane pod created
+- **03/16, 19:47:29 UTC** - DV head pod created (2.5 hour delay due to k8s/OpenShift system issue)
+
+Due to the delay, the hurricane pod downloaded incorrect Hadoop configuration from the head pod, causing the BigSQL scheduler component to fail startup. The downloaded config mismatched the binaries in the DV hurricane pod.
+
+**Resolution Steps:**
+1. **Manual Hadoop config download:** From DV hurricane pod (`c-db2u-dv-hurrian`), ran `/var/ibm/bigsql/logs/a.sh` to manually download correct Hadoop config from head pod
+2. **SSL configuration:** Set `db2comm` back to `TCPIP,SSL` to enable DB2 SSL port for metastore connection (metastore runs in hurricane pod)
+3. **Metastore schema mismatch:** Encountered expected metastore error due to database schema name mismatch (`HIVE` vs `SYSHIVE` in `hive-site.xml`). Confirmed with BigSQL team this is expected during upgrade and would be resolved after BigSQL database schema update
+4. **StatefulSet restart:** Scaled down and up DV head/worker StatefulSet:
+   ```bash
+   oc scale sts c-db2u-dv-db2u --replicas=0
+   # Wait for all c-db2u-dv-db2u-xxx pods to be deleted
+   oc scale sts c-db2u-dv-db2u --replicas=2
+   ```
+
+**Outcome:** DV instance upgrade resumed and completed successfully after StatefulSet restart.
