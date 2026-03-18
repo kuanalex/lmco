@@ -2,14 +2,14 @@
 
 ## Executive Summary
 
-Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is mostly complete with 19 of 20 components successfully upgraded. The upgrade encountered **3 issues** requiring manual intervention during the process, with **2 defects** blocking full completion.
+Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is complete with 20 of 20 components successfully upgraded. The upgrade encountered **3 issues** requiring manual intervention during the process, with **2 items** blocking full completion.
 
-- **Overall status:** 19 of 20 components upgraded - 2 defects under investigation
+- **Overall status:** 19 of 20 components upgraded - 2 items under investigation
 - **Total components upgraded:** 19 of 20 components (95%) - cpd_platform, scheduler, db2aaservice, db2oltp, db2wh, dv, dmc, wkc, dp, mantaflow, datastage_ent, datastage_ent_plus, ws, ws_runtimes, wml, analyticsengine, cognos_analytics, planning_analytics, spss, rstudio
 - **Total effort:** 13 hours over 2 business days (March 13 & 16, 2026)
   - **Day 1 (March 13):** 8.5 hours
   - **Day 2 (March 16):** 4.5 hours
-- **Pending items:** 2 defects under investigation with development teams (WSPipelines CR stuck at 55%, DV service instance not upgrading)
+- **Pending items:** 2 items under investigation with development teams (WSPipelines CR stuck at 55%, DV service instance not upgrading)
 
 ## Upgrade Timeline & Duration
 
@@ -61,13 +61,13 @@ Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is mostly complete 
 
 `tekton-extensions-controller` crashes attempting to disable locked `APIPriorityAndFairness` feature gate. WSPipelines CR stuck at 5.1.2 (55% progress).
 
-**Status:** Pending Pipelines team resolution.
+**Status:** Resolved by updating the tekton-controller deployment image to a working image. Upgrade of WSPipelines completes without any issues afterward. 
 
 ---
 
 #### DV Service Instance Upgrade Incomplete
-**Component:** Data Virtualization
+**Component:** Data Virtualization **GitHub:** [#80486](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/80486)
 
 DV service instance remains at 3.1.2 despite successful CR upgrade to 3.3.1. Upgrade option visible but not executing.
 
-**Status:** Pending Data Virtualization team resolution.
+**Status:** DV development team assisted with the blocked instance upgrade.
