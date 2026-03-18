@@ -4,7 +4,7 @@
 
 Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is **fully complete** with 20 of 20 components successfully upgraded. The upgrade encountered **5 issues** requiring manual intervention during the process, all of which have been resolved.
 
-- **Overall status:** ✅ 20 of 20 components upgraded successfully (100%)
+- **Overall status:** All components upgraded successfully (100%)
 - **Total components upgraded:** 20 of 20 components - cpd_platform, scheduler, db2aaservice, db2oltp, db2wh, dv, dmc, wkc, dp, mantaflow, datastage_ent, datastage_ent_plus, ws, ws_runtimes, wml, analyticsengine, cognos_analytics, planning_analytics, spss, rstudio
 - **Total effort:** 13 hours over 2 business days (March 13 & 16, 2026)
   - **Day 1 (March 13):** 8.5 hours
@@ -53,7 +53,7 @@ Upgrade from version 5.1.2 to 5.3.1 on LMCO Internal Cluster is **fully complete
 
 ---
 
-### Previously Outstanding Issues
+### Previously Outstanding, Now Resolved Issues
 
 #### WSPipelines Blocked by Tekton Controller Crash
 **Component:** WSPipelines | **GitHub:** [#80026](https://github.ibm.com/PrivateCloud-analytics/CPD-Quality/issues/80026)
